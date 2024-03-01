@@ -1,3 +1,70 @@
+import { Resource } from "@opentelemetry/resources";
+const faroEnv = {
+  url: "https://faro-collector-prod-us-east-0.grafana.net/collect/36f7682940d9377b64573fd5484918da",
+  app: {
+    environment: "local",
+    name: "demo-remix",
+    version: "missing-version",
+  },
+};
+
+import { context, trace } from "@opentelemetry/api";
+import {
+  BatchSpanProcessor,
+  NodeTracerProvider,
+} from "@opentelemetry/sdk-trace-node";
+import {
+  SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
+  SEMRESATTRS_SERVICE_NAME,
+  SEMRESATTRS_SERVICE_VERSION,
+} from "@opentelemetry/semantic-conventions";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
+import { W3CTraceContextPropagator } from "@opentelemetry/core";
+import { registerInstrumentations } from "@opentelemetry/instrumentation";
+import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
+import { ExpressInstrumentation } from "@opentelemetry/instrumentation-express";
+import { MongoDBInstrumentation } from "@opentelemetry/instrumentation-mongodb";
+import { WinstonInstrumentation } from "@opentelemetry/instrumentation-winston";
+
+// const provider = new NodeTracerProvider({
+//   resource: Resource.default().merge(
+//     new Resource({
+//       [SEMRESATTRS_SERVICE_NAME]: faroEnv.app.name,
+//       [SEMRESATTRS_SERVICE_VERSION]: faroEnv.app.version,
+//       [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: faroEnv.app.environment,
+//     })
+//   ),
+// });
+
+// provider.addSpanProcessor(
+//   new BatchSpanProcessor(
+//     new OTLPTraceExporter({
+//       credentials: {
+//         express
+//       },
+//       url: "https://tempo-prod-04-prod-us-east-0.grafana.net/tempo",
+//       headers: {
+//         Authorization: `Basic ${btoa(
+//           "821172:glc_eyJvIjoiMTA2NTIyNyIsIm4iOiJzdGFjay04NjkwNzQtaGwtcmVhZC10ZXN0X3Rva2VuIiwiayI6IkxWc20xOWFYMjVFOG1ZYjkwWTE1aUQwbCIsIm0iOnsiciI6InByb2QtdXMtZWFzdC0wIn19"
+//         )}`,
+//       },
+//     })
+//   )
+// );
+
+// provider.register({
+//   propagator: new W3CTraceContextPropagator(),
+// });
+
+// registerInstrumentations({
+//   instrumentations: [
+//     new HttpInstrumentation(),
+//     new ExpressInstrumentation(),
+//     new WinstonInstrumentation(),
+//     new MongoDBInstrumentation(),
+//   ],
+// });
+
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as url from "node:url";
@@ -57,9 +124,21 @@ app.use(express.static("public", { maxAge: "1h" }));
 
 app.use(morgan("tiny"));
 
-app.all("*", remixHandler);
+app.all("*", (...args) => {
+  const s = trace.getTracer(faroEnv.app.name, faroEnv.app.version);
 
-const port = process.env.PORT || 3000;
+  const span = s.startSpan("remixHandler");
+
+  span.addEvent("startingRequest");
+  span.setAttribute("testValue", true);
+
+  const r = remixHandler(...args);
+
+  span.end();
+  return r;
+});
+
+const port = process.env.PORT || 4202;
 app.listen(port, async () => {
   console.log(`Express server listening at http://localhost:${port}`);
 

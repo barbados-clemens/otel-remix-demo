@@ -1,4 +1,4 @@
-import { level, format, createLogger, transports } from "winston";
+import { format, createLogger, transports } from "winston";
 import { hostname } from "os";
 import type { TransformableInfo } from "logform";
 

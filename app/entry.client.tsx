@@ -8,6 +8,13 @@ import { RemixBrowser } from "@remix-run/react";
 import { startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";
 
+// import { trace, context } from "./init-web-otel";
+
+// const defaultTracer = trace.getTracer("default");
+// const span = defaultTracer?.startSpan("entry.client");
+
+// context.with(trace.setSpan(context.active(), span), () => {
+// console.log("starting");
 startTransition(() => {
   hydrateRoot(
     document,
@@ -16,3 +23,4 @@ startTransition(() => {
     </StrictMode>
   );
 });
+// });
