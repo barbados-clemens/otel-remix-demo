@@ -7,12 +7,22 @@
     "build": "remix build",
     "dev": "remix dev --manual -c \"node --watch-path server.js --watch server.js\"",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
-    "start": "cross-env NODE_ENV=production node ./server.js",
+    "start": "cross-env NODE_ENV=production node --require ./instrument.cjs ./server.js",
     "typecheck": "tsc"
   },
   "dependencies": {
     "@grafana/faro-web-sdk": "^1.4.0",
     "@grafana/faro-web-tracing": "^1.4.0",
+    "@opentelemetry/core": "^1.22.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.49.1",
+    "@opentelemetry/instrumentation": "^0.49.1",
+    "@opentelemetry/instrumentation-express": "^0.35.0",
+    "@opentelemetry/instrumentation-http": "^0.49.1",
+    "@opentelemetry/instrumentation-mongodb": "^0.39.0",
+    "@opentelemetry/instrumentation-winston": "^0.34.0",
+    "@opentelemetry/resources": "^1.22.0",
+    "@opentelemetry/sdk-trace-node": "^1.22.0",
+    "@opentelemetry/semantic-conventions": "^1.22.0",
     "@remix-run/css-bundle": "^2.8.0",
     "@remix-run/express": "^2.8.0",
     "@remix-run/node": "^2.8.0",
@@ -22,9 +32,11 @@
     "express": "^4.18.2",
     "isbot": "^4.1.0",
     "morgan": "^1.10.0",
+    "prom-client": "^15.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "source-map-support": "^0.5.21"
+    "source-map-support": "^0.5.21",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
     "@remix-run/dev": "^2.8.0",
